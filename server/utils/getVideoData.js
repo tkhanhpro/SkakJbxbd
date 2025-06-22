@@ -12,7 +12,6 @@ async function getVideoData(videoUrl, token = '', retries = 3) {
     'referer': 'https://getfvid.online/',
     'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36',
   };
-
   const payload = qs.stringify({
     url: videoUrl,
     token: token || '292e8b8832c594c3fe843b9eb9d9dd16699901dd4d8c998301514542682b7346',
@@ -20,14 +19,18 @@ async function getVideoData(videoUrl, token = '', retries = 3) {
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await axios.post(endpoint, payload, { headers });
-      return res.data || null;
-    } catch (error) {
-      console.error(`❌ Attempt ${attempt} failed:`, error.message);
-      if (attempt === retries) {
-        return null;
+      const res = await axios.post(endpoint, payload, { headers, timeout: 15000 });
+      if (!res.data || res.data.error) {
+        throw new Error(res.data?.error || 'Invalid response');
       }
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Delay before retry
+      console.log(`Attempt ${attempt} succeeded for URL: ${videoUrl}`);
+      return res.data;
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed for URL ${videoUrl}:`, error.message);
+      if (attempt === retries) {
+        return { error: `Failed after ${retries} attempts: ${error.message}` };
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
     }
   }
 }
