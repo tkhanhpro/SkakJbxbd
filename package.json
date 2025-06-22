@@ -1,7 +1,7 @@
 {
-  "name": "media-download",
+  "name": "media-downloader",
   "version": "1.0.0",
-  "description": "Media downloader API ",
+  "description": "A vibrant media downloader with direct /down endpoint",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
+    "express-rate-limit": "^7.1.0",
     "qs": "^6.13.0"
   },
   "devDependencies": {
