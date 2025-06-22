@@ -1,24 +1,34 @@
 async function downloadMedia() {
   const url = document.getElementById('mediaUrl').value;
   const resultDiv = document.getElementById('result');
+  const jsonBox = document.getElementById('jsonBox');
+  const loader = document.getElementById('loader');
+  const toast = document.getElementById('toast');
 
   if (!url) {
-    resultDiv.innerHTML = '<p style="color: red;">Please enter a valid URL</p>';
+    showToast('Drop a link, fam! 😎');
     return;
   }
 
-  resultDiv.innerHTML = '<p>Loading...</p>';
+  resultDiv.innerHTML = '';
+  jsonBox.innerHTML = '';
+  loader.style.display = 'block';
 
   try {
-    const response = await fetch(`/api/down?url=${encodeURIComponent(url)}`);
+    const response = await fetch(`/down?url=${encodeURIComponent(url)}`);
     const data = await response.json();
 
-    if (data.error) {
-      resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+    loader.style.display = 'none';
+
+    // Hiển thị JSON response
+    jsonBox.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+    if (!data.success) {
+      showToast(data.error || 'Something went wrong! 😿');
       return;
     }
 
-    let html = '<h3>Download Links:</h3>';
+    let html = '';
     if (data.medias && Array.isArray(data.medias)) {
       html += '<ul>';
       data.medias.forEach(media => {
@@ -26,11 +36,22 @@ async function downloadMedia() {
       });
       html += '</ul>';
     } else {
-      html = '<p>No downloadable media found.</p>';
+      html = '<p>No media found! 😕</p>';
     }
 
     resultDiv.innerHTML = html;
   } catch (error) {
-    resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+    loader.style.display = 'none';
+    showToast(`Oops: ${error.message}`);
+    jsonBox.innerHTML = `<pre>Error: ${error.message}</pre>`;
   }
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.display = 'block';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3500);
 }
